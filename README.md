@@ -17,28 +17,28 @@ El ecosistema se divide en tres capas lógicas de ejecución:
 ## 📂 Estructura del Repositorio
 
 ```text
-├── ntrip_ros/                # PAQUETE 1: Cliente NTRIP para la Red Andaluza de Posicionamiento (RAP)
+├── ntrip_ros/                  # PAQUETE 1: Cliente NTRIP para la Red Andaluza de Posicionamiento (RAP)
 │   ├── CMakeLists.txt
 │   ├── package.xml
 │   └── src/
-│       └── ntripclient.py    # Captura hilos asíncronos y decodifica tramas RTCM 3
+│       └── ntripclient.py      # Captura hilos asíncronos y decodifica tramas RTCM 3
 │
-└── tfg_juan_serrano/         # PAQUETE 2: Paquete principal de control y navegación
+└── tfg_juan_serrano/           # PAQUETE 2: Paquete principal de control y navegación
     ├── CMakeLists.txt
     ├── package.xml
     ├── tfg_juan_serrano.code-workspace
     │
-    ├── config/               # Archivos de parametrización (YAML)
-    │   ├── ekf_fusion.yaml   # Configuración de matrices de covarianza y selección de variables del EKF
-    │   └── zed-f9p.yaml      # Configuración del modelo dinámico automotriz y tasa de hercios del u-blox
+    ├── config/                 # Archivos de parametrización (YAML)
+    │   ├── ekf_fusion.yaml     # Configuración de matrices de covarianza y selección de variables del EKF
+    │   └── zed-f9p.yaml        # Configuración del modelo dinámico automotriz y tasa de hercios del u-blox
     │
-    ├── launch/               # Orquestadores de lanzamiento (LAUNCH)
-    │   ├── fusion_gps.launch # Inicializa el Filtro de Kalman y el transformador de coordenadas UTM
-    │   ├── ntrip_rap.launch  # Levanta el cliente de red conectado a los servidores de la RAP
-    │   ├── real_master.launch# Launch maestro definitivo para pruebas físicas en el coche
-    │   └── sim_master.launch # Launch espejo adaptado para el simulador Gazebo
+    ├── launch/                 # Orquestadores de lanzamiento (LAUNCH)
+    │   ├── fusion_gps.launch   # Inicializa el Filtro de Kalman y el transformador de coordenadas UTM
+    │   ├── ntrip_rap.launch    # Levanta el cliente de red conectado a los servidores de la RAP
+    │   ├── real_master.launch  # Launch maestro definitivo para pruebas físicas en el coche
+    │   └── sim_master.launch   # Launch espejo adaptado para el simulador Gazebo
     │
-    └── src/                  # Nodos lógicos de decisión (PYTHON)
+    └── src/                    # Nodos lógicos de decisión (PYTHON)
         ├── cmd_vel_to_ackermann.py  # Traductor cinemático de comandos geométricos a VESC
         ├── controlador_estados.py   # Supervisor central (Máquina de Estados Finitos)
         ├── grabador_trayectoria.py  # Registro espacial diferencial de waypoints (Notario)
