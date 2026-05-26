@@ -1,6 +1,7 @@
 # TFG: Navegación Autónoma y Localización Centimétrica (UMA-RACECAR)
 
-Este repositorio contiene los paquetes de ROS desarrollados para el Trabajo Fin de Grado: **"Implementación de un sistema de navegación autónoma y localización centimétrica mediante GNSS-RTK para la plataforma UMA-RACECAR"** en la Escuela de Ingenierías Industriales de la Universidad de Málaga (UMA).
+Este repositorio contiene los paquetes de ROS desarrollados para el Trabajo Fin de Grado: **"Integración de IMU y GNSS-RTK para seguimiento de
+trayectorias con vehículo a escala para la competición de Formula Student"** en la Escuela de Ingenierías Industriales de la Universidad de Málaga (UMA).
 
 El sistema utiliza una arquitectura modular que combina fusión sensorial mediante Filtro de Kalman Extendido (EKF), correcciones diferenciales en tiempo real vía protocolo NTRIP y un algoritmo de guiado geométrico por persecución pura (*Pure-Pursuit*).
 
