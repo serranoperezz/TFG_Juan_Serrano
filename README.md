@@ -35,7 +35,7 @@ El ecosistema se divide en tres capas lógicas de ejecución:
     ├── launch/                 # Orquestadores de lanzamiento (LAUNCH)
     │   ├── fusion_gps.launch   # Inicializa el Filtro de Kalman y el transformador de coordenadas UTM
     │   ├── ntrip_rap.launch    # Levanta el cliente de red conectado a los servidores de la RAP
-    │   ├── real_master.launch  # Launch maestro definitivo para pruebas físicas en el coche
+    │   ├── gps_master.launch   # Launch maestro definitivo para pruebas físicas en el coche
     │   └── sim_master.launch   # Launch espejo adaptado para el simulador Gazebo
     │
     └── src/                    # Nodos lógicos de decisión (PYTHON)
@@ -88,7 +88,7 @@ El sistema cuenta con un archivo de lanzamiento maestro unificado que automatiza
 ### Lanzamiento de la Plataforma Real
 Asegúrate de que la placa ArduSimple esté conectada en el puerto `/dev/ttyUSB0` y ejecuta:
 ```bash
-roslaunch tfg_juan_serrano real_master.launch
+roslaunch tfg_juan_serrano gps_master.launch
 ```
 *Nota: Este comando desplegará automáticamente una ventana de terminal `xterm` independiente con el menú interactivo del **Director de Estados**.*
 
