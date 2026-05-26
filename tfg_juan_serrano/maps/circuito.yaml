@@ -1,8 +1,0 @@
-image: circuito.png
-# Resolucion: Cuantos metros de la realidad representa cada pixel (0.05 = 5 cm)
-resolution: 0.005
-# Origen: Coordenadas X, Y, Yaw de la esquina inferior izquierda de la imagen
-origin: [-4.96, -4.96, 0.0]
-occupied_thresh: 0.65
-free_thresh: 0.196
-negate: 0
