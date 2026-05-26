@@ -96,7 +96,7 @@ roslaunch tfg_juan_serrano gps_master.launch
 
 1. **Fase de Reposo (IDLE):** El coche arranca bloqueado por seguridad. Las transformaciones geométricas (`tf`) se estabilizan con los datos fijos del RTK centimétrico de la RAP.
 2. **Fase de Grabación (Mapeo):** * Pulsa el botón **`SELECT`** en el mando de PS3 o introduce la tecla **`G`** en la terminal de xterm.
-   * Conduce el coche manualmente por la trazada ideal de la pista. El sistema guardará un punto de posición corregido de forma inteligente cada 5 cm en `~/trayectoria.csv`.
+   * Conduce el coche manualmente por la trazada ideal de la pista. El sistema guardará un punto de posición corregido de forma inteligente cada 2.5 cm en `~/trayectoria.csv`.
    * Vuelve a pulsar **`SELECT`** / **`G`** para cerrar y salvar físicamente el archivo en el eMMC.
 3. **Fase de Carrera Autónoma (Navegación):**
    * Sitúa el vehículo en el punto de inicio de la trazada.
