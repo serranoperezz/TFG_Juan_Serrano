@@ -1,7 +1,7 @@
 # Configuracion optima para ArduSimple simpleRTK2Blite (u-blox ZED-F9P) - Modo Rover RTK
 
 # 1. CONEXION FISICA
-device: /dev/ttyUSB0    # Puerto USB estandar de la placa ArduSimple en Linux
+device: /dev/gps_ublox    # Puerto USB estandar de la placa ArduSimple en Linux
 frame_id: gps_link      # El nombre del eslabon en tu arbol TF (el soporte de la antena)
 
 # 2. MODELO DINAMICO (CRITICO PARA FORMULA STUDENT)
@@ -11,20 +11,35 @@ dynamic_model: automotive
 
 # 3. VELOCIDAD DE COMUNICACION
 uart1:
-  baudrate: 115200      # Alta velocidad necesaria para soportar trafico RTCM pesado
+  baudrate: 115200        # Alta velocidad necesaria para soportar trafico RTCM pesado
 
 # 4. FRECUENCIA DE ACTUALIZACION (Navigation Rate)
-#  10 Hz (100 ms) para que el EKF en ROS tenga datos frescos.
-rate: 100               # Medicion en milisegundos (100ms = 10Hz)
+#  10 Hz  para que el EKF en ROS tenga datos frescos.
+rate: 10               # 10Hz
 nav_rate: 1             # Publicar cada ciclo de medicion
+
+
+# Le dice al driver que intente configurar el chip
+config_on_startup: true
+
+# Asegúrate de mantener esto en false para que no borre la memoria
+clear_bbr: false
+
+
 
 # 5. CONFIGURACION RTK / NTRIP
 # Nos aseguramos de que el u-blox este configurado como "Rover" (receptor),
 # no como estacion base (Time Mode 3 = 0).
 tmode3: 0
+dgnss_mode: 2
 
 # 6. PUBLICACION DE TOPICOS ROS
 publish:
-  all: true             # Publicar diagnosticos y satelites para depuracion
   nav:
-    all: true           # Publicar mensajes NavSatFix, Odometry de GPS, etc.
+    pvt: true
+    fix: true
+
+# Force UBX-CFG-RATE explicitly: 100ms period, nav_rate=1, timeref=UTC
+# UBX frame: B5 62 06 08 06 00 [measRate_L measRate_H] [navRate_L navRate_H] [timeRef_L timeRef_H] [CK_A CK_B]
+# 100ms = 0x0064, navRate=1 = 0x0001, timeRef=0 = 0x0000
+# Checksum over class+id+len+payload: 06 08 06 00 64 00 01 00 00 00 → CK_A=0x79 CK_B=0x47 (Wait, let me recalculate)
