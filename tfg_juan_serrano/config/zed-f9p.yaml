@@ -1,0 +1,40 @@
+# Configuracion optima para ArduSimple simpleRTK2Blite (u-blox ZED-F9P) - Modo Rover RTK
+
+# 1. CONEXION FISICA
+device: /dev/gps_ublox    # Puerto USB estandar de la placa ArduSimple en Linux
+frame_id: gps_link      # El nombre del eslabon en tu arbol TF (el soporte de la antena)
+
+# 2. MODELO DINAMICO (CRITICO PARA FORMULA STUDENT)
+# El ZED-F9P tiene su propio Filtro de Kalman interno. 
+# 'automotive' asume que el vehiculo no vuela y tiene aceleraciones longitudinales fuertes.
+dynamic_model: automotive 
+
+# 3. VELOCIDAD DE COMUNICACION
+uart1:
+  baudrate: 460800        # Alta velocidad necesaria para soportar trafico RTCM pesado
+
+# 4. FRECUENCIA DE ACTUALIZACION (Navigation Rate)
+#  10 Hz  para que el EKF en ROS tenga datos frescos.
+rate: 10               # 10Hz
+nav_rate: 1             # Publicar cada ciclo de medicion
+
+
+# Le dice al driver que intente configurar el chip
+config_on_startup: false
+
+# Asegúrate de mantener esto en false para que no borre la memoria
+clear_bbr: false
+
+
+
+# 5. CONFIGURACION RTK / NTRIP
+# Nos aseguramos de que el u-blox este configurado como "Rover" (receptor),
+# no como estacion base (Time Mode 3 = 0).
+tmode3: 0
+dgnss_mode: 2
+
+# 6. PUBLICACION DE TOPICOS ROS
+publish:
+  nav:
+    pvt: true
+    fix: true

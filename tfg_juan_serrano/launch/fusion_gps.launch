@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="wait_for_datum" default="true" />
+
+  <!-- Filtro de Kalman -->
+  <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se"
+        clear_params="true" output="screen">
+    <rosparam command="load" file="$(find tfg_juan_serrano)/config/ekf_fusion.yaml" />
+    <remap from="odometry/filtered" to="odometry/filtered_map"/>
+  </node>
+
+	<!-- Transformada estática: posición de la antena GPS respecto al centro del robot -->
+<!-- Ajusta x, y, z con las medidas reales del soporte impreso en 3D -->
+<node pkg="tf2_ros" type="static_transform_publisher" name="gps_link_tf"
+      args="0.0 0.0 0.3 -1.57079632679 0 0 base_link gps_link" />
+<!--        x   y   z   R P Y  padre      hijo  -->
+
+  <!-- Convierte GPS lat/lon a coordenadas cartesianas x/y.
+       Con wait_for_datum=true, el frame map queda anclado al datum fijo
+       y no al primer punto recibido tras arrancar ROS. -->
+  <node pkg="robot_localization" type="navsat_transform_node" name="navsat_transform"
+        clear_params="true" output="screen">
+    <!-- CORREGIDO: tu IMU publica en /imu, no en /imu/data -->
+    <remap from="imu/data"         to="/imu" />
+    <remap from="gps/fix"          to="/ublox_gps/fix" />
+    <remap from="odometry/filtered" to="odometry/filtered_map"/>
+    <remap from="odometry/gps"     to="odometry/gps" />
+
+    <rosparam param="datum">[36.715528, -4.491028, 0.0]</rosparam>
+    <param name="magnetic_declination_radians" value="0"/>
+    <param name="yaw_offset"                   value="1.5707963"/>
+    <param name="zero_altitude"                value="true"/>
+    <param name="broadcast_cartesian_transform" value="false"/>
+    <param name="publish_filtered_gps"         value="true"/>
+    <param name="wait_for_datum"               value="true"/>
+  </node>
+
+  <!-- Trayectoria en RViz -->
+  <node pkg="hector_trajectory_server" type="hector_trajectory_server"
+        name="trajectory_server_tfg" output="log">
+    <param name="target_frame_name"        value="map" />
+    <param name="source_frame_name"        value="base_link" />
+    <param name="trajectory_update_rate"   value="10.0" />
+    <param name="trajectory_publish_rate"  value="10.0" />
+  </node>
+</launch>

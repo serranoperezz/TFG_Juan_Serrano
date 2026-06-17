@@ -1,0 +1,80 @@
+# Configuración del Filtro de Kalman Extendido (EKF)
+frequency: 30
+sensor_timeout: 0.1
+transform_timeout: 0.25
+two_d_mode: true # El coche solo se mueve en X, Y y ángulo de giro (yaw)
+
+# Marcos de referencia (Frames)
+map_frame: map              
+odom_frame: odom            
+base_link_frame: base_link  
+world_frame: map            # El EKF calculará respecto a map
+publish_tf: true             # El EKF crea el puente  
+use_odometry_datum: false        
+
+# 1. Configuracion de la Odometria (Ruedas - VESC)
+# Cogemos: Velocidad X y Velocidad Angular Z
+odom0: /vesc/odom
+odom0_config: [false, false, false, # x, y, z                (posicion)
+               false, false, false, # roll, pitch, yaw       (angulos)
+               false, false, false, # [vx], vy, vz           (Velocidad lineal)
+               false, false, false,  # vroll, vpitch, [vyaw]  (Velocidad angular)
+               false, false, false] # ax, ay, az             (aceleraciones)
+odom0_relative: false
+
+# 2. Configuracion de la IMU
+# Yaw solo debe estar en true si /imu entrega orientacion absoluta ENU
+# repetible tras apagar/encender. Si el yaw de la IMU arranca en cero cada vez,
+# pon ese true en false y deja solo la velocidad angular z.
+imu0: /imu
+imu0_config: [false, false, false,
+              false, false, false,  # yaw absoluto de la IMU, solo si es fiable
+              false, false, false,
+              false, false, true,  # v_yaw (Velocidad angular wz) -> Mantenlo en true
+              true,  false, false] # ax (Aceleración lineal) -> Mantenlo en true
+imu0_relative: false
+
+# 3. Configuración del GPS (NavSatFix)
+# El GPS nos da posición absoluta X e Y después de pasar por un transformador
+odom1: odometry/gps
+odom1_config: [true,  true,  false, # x, y (Posicion absoluta)
+               false, false, false,
+               false, false, false,
+               false, false, false,
+               false, false, false]
+odom1_relative: false
+
+
+# le dice al EKF cuanto debe confiar en sus propias predicciones matematicas frente a los datos de los sensores
+process_noise_covariance: [0.05, 0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
+                           0,    0.05, 0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
+                           0,    0,    0.06, 0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
+                           0,    0,    0,    0.03, 0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
+                           0,    0,    0,    0,    0.03, 0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
+                           0,    0,    0,    0,    0,    0.06, 0,     0,     0,    0,    0,    0,    0,    0,    0,
+                           0,    0,    0,    0,    0,    0,    0.025, 0,     0,    0,    0,    0,    0,    0,    0,
+                           0,    0,    0,    0,    0,    0,    0,     0.025, 0,    0,    0,    0,    0,    0,    0,
+                           0,    0,    0,    0,    0,    0,    0,     0,     0.04, 0,    0,    0,    0,    0,    0,
+                           0,    0,    0,    0,    0,    0,    0,     0,     0,    0.01, 0,    0,    0,    0,    0,
+                           0,    0,    0,    0,    0,    0,    0,     0,     0,    0,    0.01, 0,    0,    0,    0,
+                           0,    0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0.02, 0,    0,    0,
+                           0,    0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0.01, 0,    0,
+                           0,    0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0.01, 0,
+                           0,    0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0.015]
+
+# incertidumbre incial
+initial_estimate_covariance: [1.0, 0,    0,    0,    0,    0,    0,    0,    0,    0,     0,     0,     0,    0,    0,
+                              0,    1.0, 0,    0,    0,    0,    0,    0,    0,    0,     0,     0,     0,    0,    0,
+                              0,    0,    1e-9, 0,    0,    0,    0,    0,    0,    0,     0,     0,     0,    0,    0,
+                              0,    0,    0,    1.0, 0,    0,    0,    0,    0,    0,     0,     0,     0,    0,    0,
+                              0,    0,    0,    0,    1.0, 0,    0,    0,    0,    0,     0,     0,     0,    0,    0,
+                              0,    0,    0,    0,    0,    1e-9, 0,    0,    0,    0,     0,     0,     0,    0,    0,
+                              0,    0,    0,    0,    0,    0,    1.0, 0,    0,    0,     0,     0,     0,    0,    0,
+                              0,    0,    0,    0,    0,    0,    0,    1.0, 0,    0,     0,     0,     0,    0,    0,
+                              0,    0,    0,    0,    0,    0,    0,    0,    1.0, 0,     0,     0,     0,    0,    0,
+                              0,    0,    0,    0,    0,    0,    0,    0,    0,    1.0,  0,     0,     0,    0,    0,
+                              0,    0,    0,    0,    0,    0,    0,    0,    0,    0,     1.0,  0,     0,    0,    0,
+                              0,    0,    0,    0,    0,    0,    0,    0,    0,    0,     0,     1.0,  0,    0,    0,
+                              0,    0,    0,    0,    0,    0,    0,    0,    0,    0,     0,     0,     1.0, 0,    0,
+                              0,    0,    0,    0,    0,    0,    0,    0,    0,    0,     0,     0,     0,    1.0, 0,
+                              0,    0,    0,    0,    0,    0,    0,    0,    0,    0,     0,     0,     0,    0,    1.0]                          

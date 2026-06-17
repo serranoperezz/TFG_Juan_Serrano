@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="ntrip_ros" type="ntripclient.py" name="ntrip_client" output="screen">
+        <param name="ntrip_server" value="rap.juntadeandalucia.es:2102" />
+        <param name="ntrip_user"   value="juanserrano" />
+        <param name="ntrip_pass"   value="rap03003" />
+        <param name="ntrip_stream" value="MLGA3" />
+        <param name="rtcm_topic"   value="/rtcm" />
+    </node>
+</launch>
