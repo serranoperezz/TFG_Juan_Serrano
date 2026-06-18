@@ -34,9 +34,8 @@
     <node pkg="tfg_juan_serrano" type="grabador_trayectoria.py" name="notario" output="screen">
 
     <!-- Parametros para configurar el algoritmo PurePursuit -->
-	<param name="lookahead_dist"   value="1.2" />
+	<param name="lookahead_dist"   value="1.8" />
         <param name="v_velocidad"      value="1" />
-        <param name="ventana_busqueda" value="40" />
         <param name="tam_ventana_yaw"  value="20" />
         <param name="dist_min_yaw"     value="0.25" />
 
