@@ -2,15 +2,13 @@
 # -*- coding: utf-8 -*-
 
 import rospy
-
-# CAMBIO 1: Usamos el paquete estandar rtcm_msgs en lugar del pesado mavros_msgs
 from rtcm_msgs.msg import Message 
 
 import datetime
 from httplib import HTTPConnection
 from base64 import b64encode
 from threading import Thread
-import time # Anadido para los delays de reconexion
+import time
 
 class ntripconnect(Thread):
     def __init__(self, ntc):
@@ -21,39 +19,41 @@ class ntripconnect(Thread):
     def run(self):
         headers = {
             'Ntrip-Version': 'Ntrip/2.0',
-            'User-Agent': 'NTRIP ntrip_ros_UMA', # Personalizado
+            'User-Agent': 'NTRIP ntrip_ros_UMA',
             'Connection': 'close',
             'Authorization': 'Basic ' + b64encode(self.ntc.ntrip_user + ':' + self.ntc.ntrip_pass)
         }
         
-        # CAMBIO 2: Bucle infinito de reconexion para tolerancia a fallos
+        # Bucle principal de conexión con tolerancia a fallos
         while not self.stop and not rospy.is_shutdown():
             try:
-                rospy.loginfo("Conectando al servidor NTRIP (RAP): " + self.ntc.ntrip_server)
+                rospy.loginfo("Conectando al servidor NTRIP: " + self.ntc.ntrip_server)
                 connection = HTTPConnection(self.ntc.ntrip_server, timeout=10)
                 now = datetime.datetime.utcnow()
                 
-                # Enviamos la trama NMEA para decirle a la RAP donde estamos (Malaga)
+                # Inyección de trama NMEA GGA para inicialización del stream VRS/PRS
                 connection.request('GET', '/'+self.ntc.ntrip_stream, self.ntc.nmea_gga % (now.hour, now.minute, now.second), headers)
                 
                 response = connection.getresponse()
                 if response.status != 200: 
-                    rospy.logwarn("Error de conexion NTRIP. Estado: {}. Reintentando en 5s...".format(response.status))
+                    rospy.logwarn("Error de conexion NTRIP (Status: {}). Reintentando en 5s...".format(response.status))
                     time.sleep(5)
                     continue
 
                 rospy.loginfo("Conexion NTRIP establecida con exito.")
-                
-                # CAMBIO 3: Instanciamos el nuevo tipo de mensaje
                 rmsg = Message() 
                 
+                # Desencapsulado del stream RTCM
                 while not self.stop and not rospy.is_shutdown():
                     data = response.read(1)
-                    if not data: # Si el servidor cierra la conexion, salimos para reconectar
+                    if not data:
                         break
-                    if data != chr(211): # 211 (0xD3) es el byte de inicio del estandar RTCM 3
+                    
+                    # Sincronización: Preámbulo estándar RTCM 3 (0xD3 / 211)
+                    if data != chr(211): 
                         continue
                     
+                    # Lectura de longitud del mensaje (10 bits corregidos por máscara)
                     l1 = ord(response.read(1))
                     l2 = ord(response.read(1))
                     pkt_len = ((l1 & 0x3) << 8) + l2
@@ -68,7 +68,7 @@ class ntripconnect(Thread):
                     rmsg.header.seq += 1
                     rmsg.header.stamp = rospy.get_rostime()
                     
-                    # CAMBIO 4: Forzamos el formato a LISTA para evitar el error de ROS (list or tuple type)
+                    # Serialización del frame RTCM completo a tipo de dato compatible con ROS
                     raw_data = data + chr(l1) + chr(l2) + pkt + parity
                     rmsg.message = list(bytearray(raw_data)) 
                     
@@ -87,7 +87,8 @@ class ntripclient:
     def __init__(self):
         rospy.init_node('ntripclient', anonymous=True)
 
-        self.rtcm_topic = rospy.get_param('~rtcm_topic', '/rtcm') # Valor por defecto seguro
+        # Carga de parámetros del servidor y configuración de tópicos
+        self.rtcm_topic = rospy.get_param('~rtcm_topic', '/rtcm') 
         self.nmea_topic = rospy.get_param('~nmea_topic', '/nmea_sentence')
 
         self.ntrip_server = rospy.get_param('~ntrip_server')
@@ -96,9 +97,9 @@ class ntripclient:
         self.ntrip_stream = rospy.get_param('~ntrip_stream')
         self.nmea_gga = rospy.get_param('~nmea_gga')
 
-        # CAMBIO 5: Publicamos el nuevo tipo de mensaje
         self.pub = rospy.Publisher(self.rtcm_topic, Message, queue_size=10)
 
+        # Inicialización del hilo de comunicaciones
         self.connection = ntripconnect(self)
         self.connection.start()
 
@@ -106,7 +107,7 @@ class ntripclient:
         rospy.spin()
         if self.connection is not None:
             self.connection.stop = True
-            self.connection.join() # Aseguramos que el hilo se cierra limpiamente
+            self.connection.join()
 
 if __name__ == '__main__':
     c = ntripclient()
