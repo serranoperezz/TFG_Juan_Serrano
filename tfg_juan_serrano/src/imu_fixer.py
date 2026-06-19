@@ -3,7 +3,7 @@ import rospy
 from sensor_msgs.msg import Imu
 
 def callback(data):
-    # Invertimos el signo de la velocidad angular en Z
+    # Signo de la velocidad angular en Z invertido
     data.angular_velocity.z *= -1
     pub.publish(data)
 
