@@ -1,45 +1,33 @@
 <?xml version="1.0"?>
 <launch>
 
-	<param name="/vesc/vesc_to_odom/base_frame" value="base_link"/>
-    <param name="/use_sim_time" value="false" />    <!-- Usamos tiempo real, no sim -->
+  <param name="/vesc/vesc_to_odom/base_frame" value="base_link"/>
+  <param name="/use_sim_time" value="false" />
 
+  <include file="$(find racecar)/launch/teleop.launch"/>	
 
-    <!-- Control del coche  -->
-	<include file="$(find racecar)/launch/teleop.launch"/>	
+  <node pkg="ublox_gps" type="ublox_gps" name="ublox_gps" output="screen" clear_params="true" respawn="true" respawn_delay="10">
+    <rosparam command="load" file="$(find tfg_juan_serrano)/config/zed-f9p.yaml" />
+    <param name="tmode3" value="0" />
+  </node>
 
-	
-    <!-- Driver de la antena -->
-    <node pkg="ublox_gps" type="ublox_gps" name="ublox_gps" output="screen" clear_params="true" 	respawn="true" respawn_delay="10">
-        <rosparam command="load" file="$(find tfg_juan_serrano)/config/zed-f9p.yaml" />
-        <param name="tmode3" value="0" />
-<!--	<remap from="/rtcm" to="/ublox_gps/rtcm" /> -->
-    </node>
+  <include file="$(find tfg_juan_serrano)/launch/ntrip_rap.launch" />
 
+  <include file="$(find tfg_juan_serrano)/launch/fusion_gps.launch">
+    <arg name="wait_for_datum" value="true" />
+  </include>
 
-    <!-- Llama al cliente que recibe las correciones de la rap y le pasa los parametros correspondientes -->
-    <include file="$(find tfg_juan_serrano)/launch/ntrip_rap.launch" />
-
-
-    <!-- Launch del filtro de Kalman -->
-    <include file="$(find tfg_juan_serrano)/launch/fusion_gps.launch">
-        <arg name="wait_for_datum" value="true" /> </include>
-
-    
-
-    <!-- Paquetes de control de grabado y reproduccion de trayectoria -->
-    <node pkg="tfg_juan_serrano" type="controlador_estados.py" name="director" output="screen" launch-prefix="xterm -e">
+  <node pkg="tfg_juan_serrano" type="controlador_estados.py" name="director" output="screen" launch-prefix="xterm -e">
     <remap from="/joy" to="/vesc/joy"/>
-</node>
-    <node pkg="tfg_juan_serrano" type="grabador_trayectoria.py" name="notario" output="screen">
+  </node>
 
-    <!-- Parametros para configurar el algoritmo PurePursuit -->
-	<param name="lookahead_dist"   value="1.8" />
-        <param name="v_velocidad"      value="1" />
-        <param name="tam_ventana_yaw"  value="20" />
-        <param name="dist_min_yaw"     value="0.25" />
+  <node pkg="tfg_juan_serrano" type="grabador_trayectoria.py" name="notario" output="screen">
+    <param name="lookahead_dist"   value="1.8" />
+    <param name="v_velocidad"      value="1" />
+    <param name="tam_ventana_yaw"  value="20" />
+    <param name="dist_min_yaw"     value="0.25" />
+  </node>
 
-    </node>
-    <node pkg="tfg_juan_serrano" type="seguidor_puntos.py" name="piloto" output="screen" />
+  <node pkg="tfg_juan_serrano" type="seguidor_puntos.py" name="piloto" output="screen" />
 
 </launch>
