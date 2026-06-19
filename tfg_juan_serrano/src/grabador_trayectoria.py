@@ -13,10 +13,8 @@ class Grabador(object):
     def __init__(self):
         rospy.init_node("grabador_trayectoria", anonymous=True)
 
-        # Directorio base para las carpetas numeradas
+        # Rutas de almacenamiento (Histórico estructurado y temporal de lectura rápida)
         self.directorio_base = os.path.expanduser("~/resultados_tfg_juan_serrano")
-        
-        # Archivo de lectura rápida para el seguidor
         self.ruta_temporal = os.path.expanduser("~/trayectoria.csv")
 
         self.odom_topic = rospy.get_param("~odom_topic", "/odometry/filtered_map")
@@ -33,6 +31,7 @@ class Grabador(object):
         self.last_y = None
         self.num_puntos = 0
 
+        # Suscriptores del nodo
         rospy.Subscriber("/modo_coche", String, self.estado_callback, queue_size=10)
         rospy.Subscriber(self.odom_topic, Odometry, self.odom_callback, queue_size=50)
         rospy.on_shutdown(self.cerrar_archivos)
@@ -40,11 +39,10 @@ class Grabador(object):
         rospy.loginfo("NOTARIO: listo. Escuchando %s", self.odom_topic)
 
     def obtener_nueva_carpeta(self):
-        # Crea el directorio base si no existe
         if not os.path.exists(self.directorio_base):
             os.makedirs(self.directorio_base)
 
-        # Escanea buscando la carpeta con el número más alto
+        # Escaneo y generación secuencial de directorios numéricos
         max_num = 0
         for item in os.listdir(self.directorio_base):
             ruta_item = os.path.join(self.directorio_base, item)
@@ -54,10 +52,8 @@ class Grabador(object):
                     if num > max_num:
                         max_num = num
                 except ValueError:
-                    # Ignora carpetas que no sean números puros
                     pass
         
-        # Crea la siguiente carpeta en la secuencia
         nueva_carpeta = os.path.join(self.directorio_base, str(max_num + 1))
         os.makedirs(nueva_carpeta)
         return nueva_carpeta
@@ -73,6 +69,7 @@ class Grabador(object):
         carpeta_actual = self.obtener_nueva_carpeta()
         ruta_historico = os.path.join(carpeta_actual, "trayectoria.csv")
 
+        # Inicialización de archivos CSV con cabeceras de coordenadas
         self.csv_file_historico = open(ruta_historico, "w")
         self.csv_writer_historico = csv.writer(self.csv_file_historico)
         self.csv_writer_historico.writerow(["x", "y"])
@@ -95,6 +92,7 @@ class Grabador(object):
         x = msg.pose.pose.position.x
         y = msg.pose.pose.position.y
 
+        # Filtro por umbral de distancia mínima recorrida
         if not self.debe_guardar(x, y):
             return
 
@@ -108,6 +106,7 @@ class Grabador(object):
         self.last_y = y
         self.num_puntos += 1
 
+        # Vaciado periódico del buffer a disco para mitigar pérdida de datos
         if self.flush_cada_puntos > 0 and self.num_puntos % self.flush_cada_puntos == 0:
             self.csv_file_historico.flush()
             self.csv_file_temporal.flush()
@@ -120,6 +119,7 @@ class Grabador(object):
         return math.hypot(x - self.last_x, y - self.last_y) >= self.distancia_minima
 
     def cerrar_archivos(self):
+        # Cierre estructurado sincronizando los descriptores de archivos con el almacenamiento
         if self.csv_file_historico is not None:
             self.csv_file_historico.flush()
             os.fsync(self.csv_file_historico.fileno())
